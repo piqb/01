@@ -169,8 +169,10 @@
                                         <input type="number" id="stopLossPercent" 
                                                oninput="validateNumberInput(this); updatePricePercentageValues('stopLossPercent')"
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-danger focus:border-danger select-on-click" 
-                                               value="-10" step="0.01">
-                                        <p class="text-xs text-gray-500 mt-1">相对于开仓价幅度（%）</p>
+                                               value="10" min="0" step="0.01">
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            <span id="stopLossDirectionText">低于</span>开仓价幅度（%）
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -190,8 +192,10 @@
                                         <input type="number" id="takeProfitPercent" 
                                                oninput="validateNumberInput(this); updatePricePercentageValues('takeProfitPercent')"
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-success focus:border-success select-on-click" 
-                                               value="20" step="0.01">
-                                        <p class="text-xs text-gray-500 mt-1">相对于开仓价幅度（%）</p>
+                                               value="20" min="0" step="0.01">
+                                        <p class="text-xs text-gray-500 mt-1">
+                                            <span id="takeProfitDirectionText">高于</span>开仓价幅度（%）
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -383,6 +387,7 @@
                             <li>输入总本金、最大可承受亏损金额或百分比（自动联动计算）</li>
                             <li>设置开仓价、止损价和止盈价</li>
                             <li>止损和止盈可通过价格或幅度两种方式设置，自动联动计算</li>
+                            <li>止损/止盈幅度无需输入正负号，系统会根据交易方向自动判断</li>
                             <li>选择杠杆倍数</li>
                             <li>系统会自动计算建议开仓本金</li>
                             <li>点击"计算结果"查看详细数据</li>
@@ -551,7 +556,7 @@
             }
         }
         
-        // 价格和幅度联动计算
+        // 价格和幅度联动计算 - 关键修改：自动判断幅度正负
         function updatePricePercentageValues(source) {
             if (isCalculating) return;
             isCalculating = true;
@@ -563,6 +568,12 @@
                 const takeProfitPriceEl = document.getElementById('takeProfitPrice');
                 const takeProfitPercentEl = document.getElementById('takeProfitPercent');
                 const tradeDirection = document.getElementById('tradeDirection').value;
+                
+                // 更新方向文本（做多/做空时显示不同的描述）
+                document.getElementById('stopLossDirectionText').textContent = 
+                    tradeDirection === 'long' ? '低于' : '高于';
+                document.getElementById('takeProfitDirectionText').textContent = 
+                    tradeDirection === 'long' ? '高于' : '低于';
                 
                 const openPrice = parseFloat(openPriceEl.value) || 0;
                 
@@ -584,11 +595,35 @@
                         stopLossPriceEl.classList.remove('input-error');
                     }
                     
-                    const percentage = ((stopLossPrice - openPrice) / openPrice) * 100;
-                    stopLossPercentEl.value = percentage.toFixed(2);
+                    // 计算幅度（取绝对值）
+                    let percentage;
+                    if (tradeDirection === 'long') {
+                        // 做多：止损价低于开仓价
+                        percentage = ((openPrice - stopLossPrice) / openPrice) * 100;
+                    } else {
+                        // 做空：止损价高于开仓价
+                        percentage = ((stopLossPrice - openPrice) / openPrice) * 100;
+                    }
+                    
+                    // 确保显示为正数
+                    stopLossPercentEl.value = Math.abs(percentage).toFixed(2);
                 } else if (source === 'stopLossPercent') {
+                    // 从百分比计算价格，根据交易方向自动应用正负
                     const percentage = parseFloat(stopLossPercentEl.value) || 0;
-                    const stopLossPrice = openPrice * (1 + percentage / 100);
+                    
+                    if (percentage < 0) {
+                        // 确保输入为正数
+                        stopLossPercentEl.value = Math.abs(percentage).toFixed(2);
+                    }
+                    
+                    let stopLossPrice;
+                    if (tradeDirection === 'long') {
+                        // 做多：止损价 = 开仓价 × (1 - 幅度/100)
+                        stopLossPrice = openPrice * (1 - percentage / 100);
+                    } else {
+                        // 做空：止损价 = 开仓价 × (1 + 幅度/100)
+                        stopLossPrice = openPrice * (1 + percentage / 100);
+                    }
                     
                     if (stopLossPrice <= 0) {
                         stopLossPercentEl.classList.add('input-error');
@@ -610,11 +645,35 @@
                         takeProfitPriceEl.classList.remove('input-error');
                     }
                     
-                    const percentage = ((takeProfitPrice - openPrice) / openPrice) * 100;
-                    takeProfitPercentEl.value = percentage.toFixed(2);
+                    // 计算幅度（取绝对值）
+                    let percentage;
+                    if (tradeDirection === 'long') {
+                        // 做多：止盈价高于开仓价
+                        percentage = ((takeProfitPrice - openPrice) / openPrice) * 100;
+                    } else {
+                        // 做空：止盈价低于开仓价
+                        percentage = ((openPrice - takeProfitPrice) / openPrice) * 100;
+                    }
+                    
+                    // 确保显示为正数
+                    takeProfitPercentEl.value = Math.abs(percentage).toFixed(2);
                 } else if (source === 'takeProfitPercent') {
+                    // 从百分比计算价格，根据交易方向自动应用正负
                     const percentage = parseFloat(takeProfitPercentEl.value) || 0;
-                    const takeProfitPrice = openPrice * (1 + percentage / 100);
+                    
+                    if (percentage < 0) {
+                        // 确保输入为正数
+                        takeProfitPercentEl.value = Math.abs(percentage).toFixed(2);
+                    }
+                    
+                    let takeProfitPrice;
+                    if (tradeDirection === 'long') {
+                        // 做多：止盈价 = 开仓价 × (1 + 幅度/100)
+                        takeProfitPrice = openPrice * (1 + percentage / 100);
+                    } else {
+                        // 做空：止盈价 = 开仓价 × (1 - 幅度/100)
+                        takeProfitPrice = openPrice * (1 - percentage / 100);
+                    }
                     
                     if (takeProfitPrice <= 0) {
                         takeProfitPercentEl.classList.add('input-error');
@@ -727,6 +786,7 @@
                 document.getElementById('stopLossPrice').value = 45000;
                 document.getElementById('takeProfitPrice').value = 60000;
                 
+                // 更新方向文本
                 updatePricePercentageValues('open');
             });
             
@@ -741,6 +801,7 @@
                 document.getElementById('stopLossPrice').value = 55000;
                 document.getElementById('takeProfitPrice').value = 40000;
                 
+                // 更新方向文本
                 updatePricePercentageValues('open');
             });
             
@@ -1042,9 +1103,9 @@
                     ["实际开仓本金", usedPrincipal, "止盈盈利金额", profitAmount],
                     ["开仓价格", openPrice, "盈亏比", riskRewardRatio],
                     ["止损价格", stopLossPrice, "持仓单位", positionUnits],
-                    ["止损幅度(%)", stopLossPercent, "逐仓爆仓价（基于开仓本金）", isolatedLiquidationPrice],
+                    [`止损幅度(${directionLabel === '做多' ? '低于' : '高于'}开仓价，%)`, stopLossPercent, "逐仓爆仓价（基于开仓本金）", isolatedLiquidationPrice],
                     ["止盈价格", takeProfitPrice, "全仓爆仓价（基于总本金）", crossLiquidationPrice],
-                    ["止盈幅度(%)", takeProfitPercent, "", ""],
+                    [`止盈幅度(${directionLabel === '做多' ? '高于' : '低于'}开仓价，%)`, takeProfitPercent, "", ""],
                     ["杠杆倍数", leverage, "", ""]
                 ];
                 
@@ -1053,7 +1114,7 @@
                 
                 // 设置列宽
                 const wscols = [
-                    {wch: 20},  // 参数列宽度
+                    {wch: 25},  // 参数列宽度
                     {wch: 15},  // 参数值列宽度
                     {wch: 25},  // 结果列宽度
                     {wch: 15}   // 结果值列宽度
