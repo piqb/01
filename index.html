@@ -143,8 +143,9 @@
                                     <label for="openPrice" class="block text-sm font-medium text-gray-700">开仓价格</label>
                                     <input type="number" id="openPrice" 
                                            oninput="validateNumberInput(this); updatePricePercentageValues('open')"
+                                           onblur="enforceMinValue(this, 0.0001)"
                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" 
-                                           value="50000" min="0.0001" step="0.01">
+                                           value="50000" step="0.01">
                                 </div>
                                 <div class="space-y-2">
                                     <label for="leverageBasic" class="block text-sm font-medium text-gray-700">杠杆倍数</label>
@@ -162,8 +163,9 @@
                                     <div>
                                         <input type="number" id="stopLossPrice" 
                                                oninput="validateNumberInput(this); updatePricePercentageValues('stopLossPrice')"
+                                               onblur="enforceMinValue(this, 0.0001)"
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-danger focus:border-danger" 
-                                               value="45000" min="0.0001" step="0.01">
+                                               value="45000" step="0.01">
                                         <p class="text-xs text-gray-500 mt-1">止损价格</p>
                                     </div>
                                     <div>
@@ -185,8 +187,9 @@
                                     <div>
                                         <input type="number" id="takeProfitPrice" 
                                                oninput="validateNumberInput(this); updatePricePercentageValues('takeProfitPrice')"
+                                               onblur="enforceMinValue(this, 0.0001)"
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-success focus:border-success" 
-                                               value="60000" min="0.0001" step="0.01">
+                                               value="60000" step="0.01">
                                         <p class="text-xs text-gray-500 mt-1">止盈价格</p>
                                     </div>
                                     <div>
@@ -437,43 +440,54 @@
             calculateResults();
         });
         
-        // 输入验证：过滤非数字字符
+        // 输入验证：过滤非数字字符（优化小数输入）
         function validateNumberInput(input) {
-            // 移除所有非数字字符，保留一个小数点
-            input.value = input.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+            let value = input.value;
             
-            // 新增：如果输入以小数点结尾或为空，不应用min/max验证（允许用户继续输入小数）
-            if (input.value.endsWith('.') || input.value === '') {
+            // 移除所有非数字字符，保留一个小数点
+            value = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+            
+            // 如果是小数输入过程（如 "0."），允许继续，不应用min/max
+            if (value.includes('.') && value.split('.')[1].length === 0) {
+                input.value = value;
                 input.classList.remove('input-error');
                 return true;
             }
             
-            // 验证最小值（仅在有效数字时应用）
-            if (input.min) {
-                const numValue = parseFloat(input.value);
-                if (!isNaN(numValue) && numValue < parseFloat(input.min)) {
-                    input.value = input.min;
-                }
-            }
+            // 解析为数字
+            const numValue = parseFloat(value);
             
-            // 验证最大值（仅在有效数字时应用）
-            if (input.max) {
-                const numValue = parseFloat(input.value);
-                if (!isNaN(numValue) && numValue > parseFloat(input.max)) {
-                    input.value = input.max;
-                }
-            }
-            
-            // 添加错误样式
-            const numValue = parseFloat(input.value);
-            if (input.value === "" || isNaN(numValue)) {
+            // 如果为空或非数字，移除错误样式
+            if (value === "" || isNaN(numValue)) {
+                input.value = value; // 保留当前输入
                 if (input.hasAttribute('required')) {
                     input.classList.add('input-error');
-                    return false;
+                } else {
+                    input.classList.remove('input-error');
                 }
+                return true; // 允许继续输入
+            }
+            
+            // 应用min/max（仅在有效数字时）
+            if (input.min && numValue < parseFloat(input.min)) {
+                // 不立即强制，等待onblur
+                input.classList.add('input-error');
+            } else if (input.max && numValue > parseFloat(input.max)) {
+                input.value = input.max;
+                input.classList.add('input-error');
             } else {
+                input.value = value;
                 input.classList.remove('input-error');
                 return true;
+            }
+        }
+        
+        // 新增：onblur时强制应用最小值（0.0001 for prices）
+        function enforceMinValue(input, minVal) {
+            const numValue = parseFloat(input.value);
+            if (!isNaN(numValue) && numValue < minVal) {
+                input.value = minVal.toFixed(4);
+                input.classList.remove('input-error');
             }
         }
         
@@ -904,9 +918,9 @@
                 if (usedPrincipal > principal) errors.push("开仓本金不能超过总本金");
                 if (isNaN(maxLoss) || maxLoss <= 0) errors.push("最大可承受亏损必须为正数");
                 if (maxLoss > principal) errors.push("最大可承受亏损不能超过总本金");
-                if (isNaN(openPrice) || openPrice <= 0) errors.push("开仓价格必须为正数");
-                if (isNaN(stopLossPrice) || stopLossPrice <= 0) errors.push("止损价格必须为正数");
-                if (isNaN(takeProfitPrice) || takeProfitPrice <= 0) errors.push("止盈价格必须为正数");
+                if (isNaN(openPrice) || openPrice <= 0.0001) errors.push("开仓价格必须大于0.0001"); // JS验证最小值
+                if (isNaN(stopLossPrice) || stopLossPrice <= 0.0001) errors.push("止损价格必须大于0.0001");
+                if (isNaN(takeProfitPrice) || takeProfitPrice <= 0.0001) errors.push("止盈价格必须大于0.0001");
                 if (isNaN(leverage) || leverage < 1) errors.push("杠杆倍数至少为1");
                 
                 // 输出错误详情到控制台
@@ -929,13 +943,13 @@
                         maxLossEl.classList.add('input-error');
                     else maxLossEl.classList.remove('input-error');
                     
-                    if (errors.includes("开仓价格必须为正数")) openPriceEl.classList.add('input-error');
+                    if (errors.includes("开仓价格必须大于0.0001")) openPriceEl.classList.add('input-error');
                     else openPriceEl.classList.remove('input-error');
                     
-                    if (errors.includes("止损价格必须为正数")) stopLossPriceEl.classList.add('input-error');
+                    if (errors.includes("止损价格必须大于0.0001")) stopLossPriceEl.classList.add('input-error');
                     else stopLossPriceEl.classList.remove('input-error');
                     
-                    if (errors.includes("止盈价格必须为正数")) takeProfitPriceEl.classList.add('input-error');
+                    if (errors.includes("止盈价格必须大于0.0001")) takeProfitPriceEl.classList.add('input-error');
                     else takeProfitPriceEl.classList.remove('input-error');
                     
                     if (errors.includes("杠杆倍数至少为1")) leverageEl.classList.add('input-error');
