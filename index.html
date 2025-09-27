@@ -442,20 +442,35 @@
             // 移除所有非数字字符，保留一个小数点
             input.value = input.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
             
-            // 验证最小值
-            if (input.min && parseFloat(input.value) < parseFloat(input.min) && input.value !== "") {
-                input.value = input.min;
+            // 新增：如果输入以小数点结尾或为空，不应用min/max验证（允许用户继续输入小数）
+            if (input.value.endsWith('.') || input.value === '') {
+                input.classList.remove('input-error');
+                return true;
             }
             
-            // 验证最大值
-            if (input.max && parseFloat(input.value) > parseFloat(input.max) && input.value !== "") {
-                input.value = input.max;
+            // 验证最小值（仅在有效数字时应用）
+            if (input.min) {
+                const numValue = parseFloat(input.value);
+                if (!isNaN(numValue) && numValue < parseFloat(input.min)) {
+                    input.value = input.min;
+                }
+            }
+            
+            // 验证最大值（仅在有效数字时应用）
+            if (input.max) {
+                const numValue = parseFloat(input.value);
+                if (!isNaN(numValue) && numValue > parseFloat(input.max)) {
+                    input.value = input.max;
+                }
             }
             
             // 添加错误样式
-            if ((input.value === "" || isNaN(parseFloat(input.value))) && input.hasAttribute('required')) {
-                input.classList.add('input-error');
-                return false;
+            const numValue = parseFloat(input.value);
+            if (input.value === "" || isNaN(numValue)) {
+                if (input.hasAttribute('required')) {
+                    input.classList.add('input-error');
+                    return false;
+                }
             } else {
                 input.classList.remove('input-error');
                 return true;
