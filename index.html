@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -116,21 +115,18 @@
                                 <div class="grid sm:grid-cols-3 gap-4">
                                     <div>
                                         <input type="number" id="principal" 
-                                               oninput="validateNumberInput(this); updateMaxLossValues('principal')"
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" 
                                                value="1000" min="0" step="0.01">
                                         <p class="text-xs text-gray-500 mt-1">总本金</p>
                                     </div>
                                     <div>
                                         <input type="number" id="maxLoss" 
-                                               oninput="validateNumberInput(this); updateMaxLossValues('amount')"
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-danger focus:border-danger" 
                                                value="100" min="0" step="0.01">
                                         <p class="text-xs text-gray-500 mt-1">最大亏损金额</p>
                                     </div>
                                     <div>
                                         <input type="number" id="maxLossPercent" 
-                                               oninput="validateNumberInput(this); updateMaxLossValues('percent')"
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-danger focus:border-danger" 
                                                value="10" min="0" max="100" step="0.1">
                                         <p class="text-xs text-gray-500 mt-1">占本金百分比（%）</p>
@@ -141,16 +137,13 @@
                             <div class="grid sm:grid-cols-2 gap-4">
                                 <div class="space-y-2">
                                     <label for="openPrice" class="block text-sm font-medium text-gray-700">开仓价格</label>
-                                    <input type="number" id="openPrice" 
-                                           oninput="validateNumberInput(this); updatePricePercentageValues('open')"
-                                           onblur="enforceMinValue(this, 0.0001)"
+                                    <input type="text" id="openPrice" 
                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" 
-                                           value="50000" step="0.01">
+                                           value="50000">
                                 </div>
                                 <div class="space-y-2">
                                     <label for="leverageBasic" class="block text-sm font-medium text-gray-700">杠杆倍数</label>
                                     <input type="number" id="leverageBasic" 
-                                           oninput="validateNumberInput(this); calculateSuggestedPrincipal()"
                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" 
                                            value="5" min="1" step="0.1">
                                 </div>
@@ -161,16 +154,13 @@
                                 <label class="block text-sm font-medium text-gray-700">止损设置</label>
                                 <div class="grid sm:grid-cols-2 gap-4">
                                     <div>
-                                        <input type="number" id="stopLossPrice" 
-                                               oninput="validateNumberInput(this); updatePricePercentageValues('stopLossPrice')"
-                                               onblur="enforceMinValue(this, 0.0001)"
+                                        <input type="text" id="stopLossPrice" 
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-danger focus:border-danger" 
-                                               value="45000" step="0.01">
+                                               value="45000">
                                         <p class="text-xs text-gray-500 mt-1">止损价格</p>
                                     </div>
                                     <div>
                                         <input type="number" id="stopLossPercent" 
-                                               oninput="validateNumberInput(this); updatePricePercentageValues('stopLossPercent')"
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-danger focus:border-danger" 
                                                value="10" min="0" step="0.01">
                                         <p class="text-xs text-gray-500 mt-1">
@@ -185,16 +175,13 @@
                                 <label class="block text-sm font-medium text-gray-700">止盈设置</label>
                                 <div class="grid sm:grid-cols-2 gap-4">
                                     <div>
-                                        <input type="number" id="takeProfitPrice" 
-                                               oninput="validateNumberInput(this); updatePricePercentageValues('takeProfitPrice')"
-                                               onblur="enforceMinValue(this, 0.0001)"
+                                        <input type="text" id="takeProfitPrice" 
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-success focus:border-success" 
-                                               value="60000" step="0.01">
+                                               value="60000">
                                         <p class="text-xs text-gray-500 mt-1">止盈价格</p>
                                     </div>
                                     <div>
                                         <input type="number" id="takeProfitPercent" 
-                                               oninput="validateNumberInput(this); updatePricePercentageValues('takeProfitPercent')"
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-success focus:border-success" 
                                                value="20" min="0" step="0.01">
                                         <p class="text-xs text-gray-500 mt-1">
@@ -319,7 +306,6 @@
                         <div>
                             <label for="initialFund" class="block text-sm font-medium text-gray-700 mb-1">初始资金 (元)</label>
                             <input type="number" id="initialFund" value="100" 
-                                   oninput="validateNumberInput(this)"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition"
                                    min="0.01" step="0.01">
                         </div>
@@ -327,7 +313,6 @@
                         <div>
                             <label for="leverage" class="block text-sm font-medium text-gray-700 mb-1">杠杆倍数</label>
                             <input type="number" id="leverage" value="3" min="1" step="0.5"
-                                   oninput="validateNumberInput(this)"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition">
                         </div>
                         
@@ -336,7 +321,6 @@
                                 加仓价格水平 (用逗号分隔，例如: 1.0,1.1,1.2,1.3,1.4,1.5)
                             </label>
                             <input type="text" id="priceLevels" value="1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0"
-                                   oninput="validatePriceLevels(this)"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition">
                             <p class="text-xs text-gray-500 mt-1">请按升序输入价格水平</p>
                         </div>
@@ -435,60 +419,147 @@
             bindBasicCalculatorEvents();
             bindLeverageCalculatorEvents();
             
+            // 初始化价格输入框事件
+            initPriceInputs();
+            
             // 初始计算
             calculateSuggestedPrincipal();
             calculateResults();
         });
         
-        // 输入验证：过滤非数字字符（优化小数输入）
+        // 初始化价格输入框事件
+        function initPriceInputs() {
+            // 获取所有价格输入框
+            const priceInputs = [
+                document.getElementById('openPrice'),
+                document.getElementById('stopLossPrice'),
+                document.getElementById('takeProfitPrice')
+            ];
+            
+            // 为每个价格输入框绑定事件处理
+            priceInputs.forEach(input => {
+                if (input) {
+                    input.addEventListener('input', function() {
+                        validateNumberInput(this);
+                        
+                        // 根据输入框ID触发相应的后续计算
+                        if (this.id === 'openPrice') {
+                            updatePricePercentageValues('open');
+                        } else if (this.id === 'stopLossPrice') {
+                            updatePricePercentageValues('stopLossPrice');
+                        } else if (this.id === 'takeProfitPrice') {
+                            updatePricePercentageValues('takeProfitPrice');
+                        }
+                    });
+                    
+                    input.addEventListener('blur', function() {
+                        enforceMinValue(this, 0.0001);
+                    });
+                }
+            });
+            
+            // 绑定本金和最大亏损相关输入框事件
+            document.getElementById('principal').addEventListener('input', function() {
+                validateNumberInput(this);
+                updateMaxLossValues('principal');
+            });
+            
+            document.getElementById('maxLoss').addEventListener('input', function() {
+                validateNumberInput(this);
+                updateMaxLossValues('amount');
+            });
+            
+            document.getElementById('maxLossPercent').addEventListener('input', function() {
+                validateNumberInput(this);
+                updateMaxLossValues('percent');
+            });
+            
+            document.getElementById('leverageBasic').addEventListener('input', function() {
+                validateNumberInput(this);
+                calculateSuggestedPrincipal();
+            });
+            
+            document.getElementById('stopLossPercent').addEventListener('input', function() {
+                validateNumberInput(this);
+                updatePricePercentageValues('stopLossPercent');
+            });
+            
+            document.getElementById('takeProfitPercent').addEventListener('input', function() {
+                validateNumberInput(this);
+                updatePricePercentageValues('takeProfitPercent');
+            });
+        }
+        
+        // 修复后的价格输入验证函数 - 解决小数点输入时光标位置异常问题
         function validateNumberInput(input) {
-            let value = input.value;
+            // 保存当前光标位置
+            const cursorPos = input.selectionStart;
+            const originalValue = input.value;
             
             // 移除所有非数字字符，保留一个小数点
-            value = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+            let value = originalValue.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
             
-            // 如果是小数输入过程（如 "0."），允许继续，不应用min/max
-            if (value.includes('.') && value.split('.')[1].length === 0) {
-                input.value = value;
+            // 处理只输入小数点的情况
+            if (value === '.') {
+                value = '0.';
+            }
+            
+            // 处理多个前导零的情况
+            if (value.length > 1 && value[0] === '0' && value[1] !== '.') {
+                value = value.replace(/^0+/, '0');
+            }
+            
+            // 更新输入值
+            input.value = value;
+            
+            // 计算新的光标位置
+            let newCursorPos = cursorPos;
+            
+            // 如果删除了字符，调整光标位置
+            if (originalValue.length > value.length) {
+                newCursorPos = Math.min(cursorPos, value.length);
+            } 
+            // 如果输入了小数点且位置变化，调整光标位置
+            else if (originalValue.indexOf('.') === -1 && value.indexOf('.') !== -1) {
+                newCursorPos = cursorPos + 1;
+            }
+            
+            // 设置新的光标位置
+            input.setSelectionRange(newCursorPos, newCursorPos);
+            
+            // 验证是否为空
+            if (value === "") {
                 input.classList.remove('input-error');
-                return true;
+                return;
             }
             
             // 解析为数字
             const numValue = parseFloat(value);
             
-            // 如果为空或非数字，移除错误样式
-            if (value === "" || isNaN(numValue)) {
-                input.value = value; // 保留当前输入
-                if (input.hasAttribute('required')) {
-                    input.classList.add('input-error');
-                } else {
-                    input.classList.remove('input-error');
-                }
-                return true; // 允许继续输入
+            // 检查是否为有效数字
+            if (isNaN(numValue)) {
+                input.classList.add('input-error');
+                return;
             }
             
-            // 应用min/max（仅在有效数字时）
-            if (input.min && numValue < parseFloat(input.min)) {
-                // 不立即强制，等待onblur
+            // 应用min/max验证
+            if (input.min !== undefined && numValue < parseFloat(input.min)) {
                 input.classList.add('input-error');
-            } else if (input.max && numValue > parseFloat(input.max)) {
+            } else if (input.max !== undefined && numValue > parseFloat(input.max)) {
                 input.value = input.max;
                 input.classList.add('input-error');
             } else {
-                input.value = value;
                 input.classList.remove('input-error');
-                return true;
             }
         }
         
-        // 新增：onblur时强制应用最小值（0.0001 for prices）
+        // onblur时强制应用最小值（0.0001 for prices）
         function enforceMinValue(input, minVal) {
             const numValue = parseFloat(input.value);
-            if (!isNaN(numValue) && numValue < minVal) {
+            if (input.value === "" || isNaN(numValue) || numValue < minVal) {
                 input.value = minVal.toFixed(4);
-                input.classList.remove('input-error');
             }
+            input.classList.remove('input-error');
         }
         
         // 验证价格水平输入
@@ -566,7 +637,7 @@
             }
         }
         
-        // 价格和幅度联动计算 - 关键修改：自动判断幅度正负
+        // 价格和幅度联动计算 - 自动判断幅度正负
         function updatePricePercentageValues(source) {
             if (isCalculating) return;
             isCalculating = true;
@@ -841,6 +912,14 @@
             if (generateBtn) {
                 generateBtn.addEventListener('click', generateLeverageExcel);
             }
+            
+            // 绑定价格水平输入框事件
+            const priceLevelsInput = document.getElementById('priceLevels');
+            if (priceLevelsInput) {
+                priceLevelsInput.addEventListener('input', function() {
+                    validatePriceLevels(this);
+                });
+            }
         }
         
         // 初始化价格图表
@@ -918,17 +997,10 @@
                 if (usedPrincipal > principal) errors.push("开仓本金不能超过总本金");
                 if (isNaN(maxLoss) || maxLoss <= 0) errors.push("最大可承受亏损必须为正数");
                 if (maxLoss > principal) errors.push("最大可承受亏损不能超过总本金");
-                if (isNaN(openPrice) || openPrice <= 0.0001) errors.push("开仓价格必须大于0.0001"); // JS验证最小值
+                if (isNaN(openPrice) || openPrice <= 0.0001) errors.push("开仓价格必须大于0.0001");
                 if (isNaN(stopLossPrice) || stopLossPrice <= 0.0001) errors.push("止损价格必须大于0.0001");
                 if (isNaN(takeProfitPrice) || takeProfitPrice <= 0.0001) errors.push("止盈价格必须大于0.0001");
                 if (isNaN(leverage) || leverage < 1) errors.push("杠杆倍数至少为1");
-                
-                // 输出错误详情到控制台
-                console.log("参数验证：", {
-                    principal, usedPrincipal, maxLoss,
-                    openPrice, stopLossPrice, takeProfitPrice,
-                    leverage, errors
-                });
                 
                 if (errors.length > 0) {
                     // 标记错误的输入框
@@ -1372,4 +1444,3 @@
     </script>
 </body>
 </html>
-```
