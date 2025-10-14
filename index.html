@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>综合交易计算器 - 做多做空与杠杆交易</title>
+    <title>综合交易计算器</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <!-- Tailwind 配置 -->
@@ -112,7 +111,7 @@
                             <!-- 本金和最大亏损设置 -->
                             <div class="space-y-2">
                                 <label class="block text-sm font-medium text-gray-700">本金与最大可承受亏损</label>
-                                <div class="grid sm:grid-cols-3 gap-4">
+                                <div class="grid sm:grid-cols-2 gap-4">
                                     <div>
                                         <input type="number" id="principal" 
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" 
@@ -124,12 +123,6 @@
                                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-danger focus:border-danger" 
                                                value="100" min="0" step="0.01">
                                         <p class="text-xs text-gray-500 mt-1">最大亏损金额</p>
-                                    </div>
-                                    <div>
-                                        <input type="number" id="maxLossPercent" 
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-danger focus:border-danger" 
-                                               value="10" min="0" max="100" step="0.1">
-                                        <p class="text-xs text-gray-500 mt-1">占本金百分比（%）</p>
                                     </div>
                                 </div>
                             </div>
@@ -149,7 +142,7 @@
                                 </div>
                             </div>
                             
-                            <!-- 止损价格和幅度 -->
+                            <!-- 止损价格和计算出的幅度 -->
                             <div class="space-y-2">
                                 <label class="block text-sm font-medium text-gray-700">止损设置</label>
                                 <div class="grid sm:grid-cols-2 gap-4">
@@ -160,17 +153,17 @@
                                         <p class="text-xs text-gray-500 mt-1">止损价格</p>
                                     </div>
                                     <div>
-                                        <input type="number" id="stopLossPercent" 
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-danger focus:border-danger" 
-                                               value="10" min="0" step="0.01">
+                                        <div class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                                            <span id="stopLossPercent" class="text-gray-700">-</span>%
+                                        </div>
                                         <p class="text-xs text-gray-500 mt-1">
-                                            <span id="stopLossDirectionText">低于</span>开仓价幅度（%）
+                                            <span id="stopLossDirectionText">低于</span>开仓价幅度
                                         </p>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- 止盈价格和幅度 -->
+                            <!-- 止盈价格和计算出的幅度 -->
                             <div class="space-y-2">
                                 <label class="block text-sm font-medium text-gray-700">止盈设置</label>
                                 <div class="grid sm:grid-cols-2 gap-4">
@@ -181,24 +174,14 @@
                                         <p class="text-xs text-gray-500 mt-1">止盈价格</p>
                                     </div>
                                     <div>
-                                        <input type="number" id="takeProfitPercent" 
-                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-success focus:border-success" 
-                                               value="20" min="0" step="0.01">
+                                        <div class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+                                            <span id="takeProfitPercent" class="text-gray-700">-</span>%
+                                        </div>
                                         <p class="text-xs text-gray-500 mt-1">
-                                            <span id="takeProfitDirectionText">高于</span>开仓价幅度（%）
+                                            <span id="takeProfitDirectionText">高于</span>开仓价幅度
                                         </p>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="space-y-2">
-                                <label for="usedPrincipal" class="block text-sm font-medium text-gray-700">
-                                    建议开仓本金
-                                    <span class="text-xs text-gray-500 ml-2">(根据最大亏损和杠杆自动计算)</span>
-                                </label>
-                                <input type="number" id="usedPrincipal" 
-                                       class="w-full px-4 py-2 border border-primary bg-primary/5 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" 
-                                       value="100" min="0" step="0.01" readonly>
                             </div>
                             
                             <button type="button" id="calculateBtn" class="w-full bg-primary text-white py-3 px-6 rounded-lg hover:bg-primary/90 transition-all font-medium">
@@ -234,28 +217,19 @@
                         </div>
                         
                         <div id="results" class="space-y-6">
+                            <!-- 第一行：建议开仓本金和开仓金额 -->
                             <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white p-4 rounded-lg">
+                                    <p class="text-sm text-gray-500 mb-1">建议开仓本金</p>
+                                    <p id="usedPrincipal" class="text-2xl font-bold text-primary">-</p>
+                                </div>
                                 <div class="bg-white p-4 rounded-lg">
                                     <p class="text-sm text-gray-500 mb-1">开仓金额（本金×杠杆）</p>
                                     <p id="positionSize" class="text-2xl font-bold text-primary">-</p>
                                 </div>
-                                <div class="bg-white p-4 rounded-lg">
-                                    <p class="text-sm text-gray-500 mb-1">每单位价格波动影响</p>
-                                    <p id="priceImpact" class="text-2xl font-bold text-primary">-</p>
-                                </div>
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-white p-4 rounded-lg">
-                                    <p class="text-sm text-gray-500 mb-1">止损亏损金额</p>
-                                    <p id="lossAmount" class="text-2xl font-bold text-danger">-</p>
-                                </div>
-                                <div class="bg-white p-4 rounded-lg">
-                                    <p class="text-sm text-gray-500 mb-1">止盈盈利金额</p>
-                                    <p id="profitAmount" class="text-2xl font-bold text-success">-</p>
-                                </div>
-                            </div>
-                            
+                            <!-- 第二行：盈亏比和持仓单位 -->
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="bg-white p-4 rounded-lg">
                                     <p class="text-sm text-gray-500 mb-1">盈亏比</p>
@@ -267,7 +241,19 @@
                                 </div>
                             </div>
                             
-                            <!-- 爆仓价部分 - 分为逐仓和全仓 -->
+                            <!-- 第三行：止损亏损金额和止盈盈利金额 -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white p-4 rounded-lg">
+                                    <p class="text-sm text-gray-500 mb-1">止损亏损金额</p>
+                                    <p id="lossAmount" class="text-2xl font-bold text-danger">-</p>
+                                </div>
+                                <div class="bg-white p-4 rounded-lg">
+                                    <p class="text-sm text-gray-500 mb-1">止盈盈利金额</p>
+                                    <p id="profitAmount" class="text-2xl font-bold text-success">-</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 第四行：爆仓价部分 - 分为逐仓和全仓 -->
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="bg-white p-4 rounded-lg">
                                     <p class="text-sm text-gray-500 mb-1">逐仓爆仓价（基于开仓本金）</p>
@@ -277,12 +263,6 @@
                                     <p class="text-sm text-gray-500 mb-1">全仓爆仓价（基于总本金）</p>
                                     <p id="crossLiquidationPrice" class="text-2xl font-bold text-warning">-</p>
                                 </div>
-                            </div>
-                            
-                            <!-- 图表展示 -->
-                            <div class="mt-6 bg-white p-4 rounded-lg">
-                                <p class="text-sm font-medium mb-2">价格区间示意</p>
-                                <canvas id="priceChart" height="100"></canvas>
                             </div>
                         </div>
                         
@@ -372,13 +352,11 @@
                         <h4 class="font-medium text-lg mb-2">基础交易计算</h4>
                         <ul class="text-gray-600 space-y-2 list-disc pl-5">
                             <li>选择交易方向（做多/做空）</li>
-                            <li>输入总本金、最大可承受亏损金额或百分比（自动联动计算）</li>
+                            <li>输入总本金、最大可承受亏损金额</li>
                             <li>设置开仓价、止损价和止盈价</li>
-                            <li>止损和止盈可通过价格或幅度两种方式设置，自动联动计算</li>
-                            <li>止损/止盈幅度无需输入正负号，系统会根据交易方向自动判断</li>
+                            <li>系统会自动计算止损和止盈相对于开仓价的幅度</li>
                             <li>选择杠杆倍数</li>
-                            <li>系统会自动计算建议开仓本金</li>
-                            <li>点击"计算结果"查看详细数据</li>
+                            <li>点击"计算结果"查看详细数据，包括建议开仓本金</li>
                         </ul>
                     </div>
                     <div>
@@ -407,14 +385,10 @@
 
     <script>
         // 全局变量
-        let priceChart = null;
         let isCalculating = false; // 防止计算循环的标志
         
         // 页面加载完成后初始化
         window.addEventListener('DOMContentLoaded', function() {
-            // 初始化图表
-            priceChart = initChart();
-            
             // 绑定所有按钮事件
             bindBasicCalculatorEvents();
             bindLeverageCalculatorEvents();
@@ -442,14 +416,12 @@
                     input.addEventListener('input', function() {
                         validateNumberInput(this);
                         
-                        // 根据输入框ID触发相应的后续计算
-                        if (this.id === 'openPrice') {
-                            updatePricePercentageValues('open');
-                        } else if (this.id === 'stopLossPrice') {
-                            updatePricePercentageValues('stopLossPrice');
-                        } else if (this.id === 'takeProfitPrice') {
-                            updatePricePercentageValues('takeProfitPrice');
-                        }
+                        // 计算并显示止损/止盈幅度
+                        calculatePricePercentages();
+                        
+                        // 触发计算更新
+                        calculateSuggestedPrincipal();
+                        calculateResults();
                     });
                     
                     input.addEventListener('blur', function() {
@@ -461,36 +433,80 @@
             // 绑定本金和最大亏损相关输入框事件
             document.getElementById('principal').addEventListener('input', function() {
                 validateNumberInput(this);
-                updateMaxLossValues('principal');
+                calculateSuggestedPrincipal();
+                calculateResults();
             });
             
             document.getElementById('maxLoss').addEventListener('input', function() {
                 validateNumberInput(this);
-                updateMaxLossValues('amount');
-            });
-            
-            document.getElementById('maxLossPercent').addEventListener('input', function() {
-                validateNumberInput(this);
-                updateMaxLossValues('percent');
+                calculateSuggestedPrincipal();
+                calculateResults();
             });
             
             document.getElementById('leverageBasic').addEventListener('input', function() {
                 validateNumberInput(this);
                 calculateSuggestedPrincipal();
+                calculateResults();
             });
             
-            document.getElementById('stopLossPercent').addEventListener('input', function() {
-                validateNumberInput(this);
-                updatePricePercentageValues('stopLossPercent');
-            });
-            
-            document.getElementById('takeProfitPercent').addEventListener('input', function() {
-                validateNumberInput(this);
-                updatePricePercentageValues('takeProfitPercent');
-            });
+            // 交易方向改变时重新计算幅度
+            document.getElementById('longBtn').addEventListener('click', calculatePricePercentages);
+            document.getElementById('shortBtn').addEventListener('click', calculatePricePercentages);
         }
         
-        // 修复后的价格输入验证函数 - 解决小数点输入时光标位置异常问题
+        // 计算止损和止盈幅度百分比并显示
+        function calculatePricePercentages() {
+            try {
+                const openPrice = parseFloat(document.getElementById('openPrice').value) || 0;
+                const stopLossPrice = parseFloat(document.getElementById('stopLossPrice').value) || 0;
+                const takeProfitPrice = parseFloat(document.getElementById('takeProfitPrice').value) || 0;
+                const tradeDirection = document.getElementById('tradeDirection').value;
+                
+                // 更新方向文本（做多/做空时显示不同的描述）
+                document.getElementById('stopLossDirectionText').textContent = 
+                    tradeDirection === 'long' ? '低于' : '高于';
+                document.getElementById('takeProfitDirectionText').textContent = 
+                    tradeDirection === 'long' ? '高于' : '低于';
+                
+                // 验证开仓价格
+                if (openPrice <= 0) {
+                    document.getElementById('stopLossPercent').textContent = '-';
+                    document.getElementById('takeProfitPercent').textContent = '-';
+                    return;
+                }
+                
+                // 计算止损幅度
+                let stopLossPercent;
+                if (tradeDirection === 'long') {
+                    // 做多：止损价低于开仓价
+                    stopLossPercent = ((openPrice - stopLossPrice) / openPrice) * 100;
+                } else {
+                    // 做空：止损价高于开仓价
+                    stopLossPercent = ((stopLossPrice - openPrice) / openPrice) * 100;
+                }
+                
+                // 计算止盈幅度
+                let takeProfitPercent;
+                if (tradeDirection === 'long') {
+                    // 做多：止盈价高于开仓价
+                    takeProfitPercent = ((takeProfitPrice - openPrice) / openPrice) * 100;
+                } else {
+                    // 做空：止盈价低于开仓价
+                    takeProfitPercent = ((openPrice - takeProfitPrice) / openPrice) * 100;
+                }
+                
+                // 显示计算结果（取绝对值，确保为正数）
+                document.getElementById('stopLossPercent').textContent = Math.abs(stopLossPercent).toFixed(2);
+                document.getElementById('takeProfitPercent').textContent = Math.abs(takeProfitPercent).toFixed(2);
+                
+            } catch (error) {
+                console.error('计算价格百分比错误:', error);
+                document.getElementById('stopLossPercent').textContent = '-';
+                document.getElementById('takeProfitPercent').textContent = '-';
+            }
+        }
+        
+        // 价格输入验证函数 - 解决小数点输入时光标位置异常问题
         function validateNumberInput(input) {
             // 保存当前光标位置
             const cursorPos = input.selectionStart;
@@ -560,6 +576,7 @@
                 input.value = minVal.toFixed(4);
             }
             input.classList.remove('input-error');
+            calculatePricePercentages();
         }
         
         // 验证价格水平输入
@@ -580,204 +597,6 @@
             }
         }
         
-        // 本金和最大亏损联动计算
-        function updateMaxLossValues(source) {
-            if (isCalculating) return;
-            isCalculating = true;
-            
-            try {
-                const principalEl = document.getElementById('principal');
-                const maxLossEl = document.getElementById('maxLoss');
-                const maxLossPercentEl = document.getElementById('maxLossPercent');
-                
-                const principal = parseFloat(principalEl.value) || 0;
-                
-                // 验证本金
-                if (principal <= 0) {
-                    principalEl.classList.add('input-error');
-                    isCalculating = false;
-                    return;
-                } else {
-                    principalEl.classList.remove('input-error');
-                }
-                
-                if (source === 'amount' || source === 'principal') {
-                    // 从金额计算百分比或本金变化时重新计算
-                    const maxLoss = parseFloat(maxLossEl.value) || 0;
-                    if (maxLoss > principal) {
-                        maxLossEl.value = principal.toFixed(2);
-                        maxLossEl.classList.add('input-error');
-                    } else {
-                        maxLossEl.classList.remove('input-error');
-                    }
-                    
-                    const percentage = (parseFloat(maxLossEl.value) / principal) * 100;
-                    maxLossPercentEl.value = percentage.toFixed(1);
-                } else if (source === 'percent') {
-                    // 从百分比计算金额
-                    const percentage = parseFloat(maxLossPercentEl.value) || 0;
-                    if (percentage > 100) {
-                        maxLossPercentEl.value = 100;
-                        maxLossPercentEl.classList.add('input-error');
-                    } else {
-                        maxLossPercentEl.classList.remove('input-error');
-                    }
-                    
-                    const maxLoss = principal * (parseFloat(maxLossPercentEl.value) / 100);
-                    maxLossEl.value = maxLoss.toFixed(2);
-                }
-                
-                // 触发相关计算更新
-                calculateSuggestedPrincipal();
-            } catch (error) {
-                console.error('更新最大亏损值错误:', error);
-                showErrorAlert('计算最大亏损时出错，请检查输入参数');
-            } finally {
-                isCalculating = false;
-            }
-        }
-        
-        // 价格和幅度联动计算 - 自动判断幅度正负
-        function updatePricePercentageValues(source) {
-            if (isCalculating) return;
-            isCalculating = true;
-            
-            try {
-                const openPriceEl = document.getElementById('openPrice');
-                const stopLossPriceEl = document.getElementById('stopLossPrice');
-                const stopLossPercentEl = document.getElementById('stopLossPercent');
-                const takeProfitPriceEl = document.getElementById('takeProfitPrice');
-                const takeProfitPercentEl = document.getElementById('takeProfitPercent');
-                const tradeDirection = document.getElementById('tradeDirection').value;
-                
-                // 更新方向文本（做多/做空时显示不同的描述）
-                document.getElementById('stopLossDirectionText').textContent = 
-                    tradeDirection === 'long' ? '低于' : '高于';
-                document.getElementById('takeProfitDirectionText').textContent = 
-                    tradeDirection === 'long' ? '高于' : '低于';
-                
-                const openPrice = parseFloat(openPriceEl.value) || 0;
-                
-                // 验证开仓价格
-                if (openPrice <= 0) {
-                    openPriceEl.classList.add('input-error');
-                    isCalculating = false;
-                    return;
-                } else {
-                    openPriceEl.classList.remove('input-error');
-                }
-                
-                // 更新止损价格和百分比
-                if (source === 'open' || source === 'stopLossPrice') {
-                    const stopLossPrice = parseFloat(stopLossPriceEl.value) || 0;
-                    if (stopLossPrice <= 0) {
-                        stopLossPriceEl.classList.add('input-error');
-                    } else {
-                        stopLossPriceEl.classList.remove('input-error');
-                    }
-                    
-                    // 计算幅度（取绝对值）
-                    let percentage;
-                    if (tradeDirection === 'long') {
-                        // 做多：止损价低于开仓价
-                        percentage = ((openPrice - stopLossPrice) / openPrice) * 100;
-                    } else {
-                        // 做空：止损价高于开仓价
-                        percentage = ((stopLossPrice - openPrice) / openPrice) * 100;
-                    }
-                    
-                    // 确保显示为正数
-                    stopLossPercentEl.value = Math.abs(percentage).toFixed(2);
-                } else if (source === 'stopLossPercent') {
-                    // 从百分比计算价格，根据交易方向自动应用正负
-                    const percentage = parseFloat(stopLossPercentEl.value) || 0;
-                    
-                    if (percentage < 0) {
-                        // 确保输入为正数
-                        stopLossPercentEl.value = Math.abs(percentage).toFixed(2);
-                    }
-                    
-                    let stopLossPrice;
-                    if (tradeDirection === 'long') {
-                        // 做多：止损价 = 开仓价 × (1 - 幅度/100)
-                        stopLossPrice = openPrice * (1 - percentage / 100);
-                    } else {
-                        // 做空：止损价 = 开仓价 × (1 + 幅度/100)
-                        stopLossPrice = openPrice * (1 + percentage / 100);
-                    }
-                    
-                    if (stopLossPrice <= 0) {
-                        stopLossPercentEl.classList.add('input-error');
-                        isCalculating = false;
-                        return;
-                    } else {
-                        stopLossPercentEl.classList.remove('input-error');
-                    }
-                    
-                    stopLossPriceEl.value = stopLossPrice.toFixed(2);
-                }
-                
-                // 更新止盈价格和百分比
-                if (source === 'open' || source === 'takeProfitPrice') {
-                    const takeProfitPrice = parseFloat(takeProfitPriceEl.value) || 0;
-                    if (takeProfitPrice <= 0) {
-                        takeProfitPriceEl.classList.add('input-error');
-                    } else {
-                        takeProfitPriceEl.classList.remove('input-error');
-                    }
-                    
-                    // 计算幅度（取绝对值）
-                    let percentage;
-                    if (tradeDirection === 'long') {
-                        // 做多：止盈价高于开仓价
-                        percentage = ((takeProfitPrice - openPrice) / openPrice) * 100;
-                    } else {
-                        // 做空：止盈价低于开仓价
-                        percentage = ((openPrice - takeProfitPrice) / openPrice) * 100;
-                    }
-                    
-                    // 确保显示为正数
-                    takeProfitPercentEl.value = Math.abs(percentage).toFixed(2);
-                } else if (source === 'takeProfitPercent') {
-                    // 从百分比计算价格，根据交易方向自动应用正负
-                    const percentage = parseFloat(takeProfitPercentEl.value) || 0;
-                    
-                    if (percentage < 0) {
-                        // 确保输入为正数
-                        takeProfitPercentEl.value = Math.abs(percentage).toFixed(2);
-                    }
-                    
-                    let takeProfitPrice;
-                    if (tradeDirection === 'long') {
-                        // 做多：止盈价 = 开仓价 × (1 + 幅度/100)
-                        takeProfitPrice = openPrice * (1 + percentage / 100);
-                    } else {
-                        // 做空：止盈价 = 开仓价 × (1 - 幅度/100)
-                        takeProfitPrice = openPrice * (1 - percentage / 100);
-                    }
-                    
-                    if (takeProfitPrice <= 0) {
-                        takeProfitPercentEl.classList.add('input-error');
-                        isCalculating = false;
-                        return;
-                    } else {
-                        takeProfitPercentEl.classList.remove('input-error');
-                    }
-                    
-                    takeProfitPriceEl.value = takeProfitPrice.toFixed(2);
-                }
-                
-                // 触发相关计算更新
-                calculateSuggestedPrincipal();
-                calculateResults();
-            } catch (error) {
-                console.error('更新价格百分比错误:', error);
-                showErrorAlert('计算价格幅度时出错，请检查输入参数');
-            } finally {
-                isCalculating = false;
-            }
-        }
-        
         // 计算建议开仓本金
         function calculateSuggestedPrincipal() {
             try {
@@ -793,7 +612,7 @@
                 
                 // 验证基础参数
                 if (maxLoss <= 0 || leverage < 1 || openPrice <= 0 || stopLossPrice <= 0 || principal <= 0) {
-                    document.getElementById('usedPrincipal').value = '0.00';
+                    document.getElementById('usedPrincipal').textContent = '-';
                     return;
                 }
                 
@@ -813,7 +632,7 @@
                 
                 // 防止除以零
                 if (priceChangePercent <= 0) {
-                    document.getElementById('usedPrincipal').value = '0.00';
+                    document.getElementById('usedPrincipal').textContent = '-';
                     return;
                 }
                 
@@ -826,11 +645,11 @@
                 suggestedPrincipal = Math.max(suggestedPrincipal, 0);
                 
                 // 更新建议开仓本金
-                document.getElementById('usedPrincipal').value = suggestedPrincipal.toFixed(2);
+                document.getElementById('usedPrincipal').textContent = suggestedPrincipal.toFixed(2);
                 
             } catch (error) {
                 console.error('计算建议开仓本金错误:', error);
-                document.getElementById('usedPrincipal').value = '0.00';
+                document.getElementById('usedPrincipal').textContent = '-';
             }
         }
         
@@ -867,8 +686,10 @@
                 document.getElementById('stopLossPrice').value = 45000;
                 document.getElementById('takeProfitPrice').value = 60000;
                 
-                // 更新方向文本
-                updatePricePercentageValues('open');
+                // 触发计算
+                calculatePricePercentages();
+                calculateSuggestedPrincipal();
+                calculateResults();
             });
             
             shortBtn.addEventListener('click', function() {
@@ -882,8 +703,10 @@
                 document.getElementById('stopLossPrice').value = 55000;
                 document.getElementById('takeProfitPrice').value = 40000;
                 
-                // 更新方向文本
-                updatePricePercentageValues('open');
+                // 触发计算
+                calculatePricePercentages();
+                calculateSuggestedPrincipal();
+                calculateResults();
             });
             
             // 绑定计算按钮事件
@@ -922,41 +745,6 @@
             }
         }
         
-        // 初始化价格图表
-        function initChart() {
-            const ctx = document.getElementById('priceChart');
-            if (!ctx) return null;
-            
-            return new Chart(ctx.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: ['止损', '开仓', '止盈'],
-                    datasets: [{
-                        label: '价格水平',
-                        data: [45000, 50000, 60000],
-                        backgroundColor: 'rgba(22, 93, 255, 0.1)',
-                        borderColor: 'rgba(22, 93, 255, 1)',
-                        borderWidth: 2,
-                        pointBackgroundColor: [
-                            'rgba(245, 63, 63, 1)',
-                            'rgba(22, 93, 255, 1)',
-                            'rgba(0, 180, 42, 1)'
-                        ],
-                        pointRadius: 6,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: false },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-        
         // 计算基础交易结果
         function calculateResults() {
             try {
@@ -965,7 +753,6 @@
                 
                 // 获取DOM元素
                 const principalEl = document.getElementById('principal');
-                const usedPrincipalEl = document.getElementById('usedPrincipal');
                 const maxLossEl = document.getElementById('maxLoss');
                 const openPriceEl = document.getElementById('openPrice');
                 const stopLossPriceEl = document.getElementById('stopLossPrice');
@@ -974,7 +761,7 @@
                 const tradeDirection = document.getElementById('tradeDirection').value;
                 
                 // 验证元素是否存在
-                if (!principalEl || !usedPrincipalEl || !maxLossEl || !openPriceEl || 
+                if (!principalEl || !maxLossEl || !openPriceEl || 
                     !stopLossPriceEl || !takeProfitPriceEl || !leverageEl) {
                     console.error('缺少必要的输入元素');
                     showErrorAlert('页面元素加载不完整，请刷新页面重试');
@@ -983,7 +770,6 @@
                 
                 // 获取输入值并进行安全转换
                 const principal = parseFloat(principalEl.value) || 0;
-                const usedPrincipal = parseFloat(usedPrincipalEl.value) || 0;
                 const maxLoss = parseFloat(maxLossEl.value) || 0;
                 const openPrice = parseFloat(openPriceEl.value) || 0;
                 const stopLossPrice = parseFloat(stopLossPriceEl.value) || 0;
@@ -993,8 +779,6 @@
                 // 详细的参数验证和错误提示
                 const errors = [];
                 if (isNaN(principal) || principal <= 0) errors.push("总本金必须为正数");
-                if (isNaN(usedPrincipal) || usedPrincipal <= 0) errors.push("开仓本金必须为正数");
-                if (usedPrincipal > principal) errors.push("开仓本金不能超过总本金");
                 if (isNaN(maxLoss) || maxLoss <= 0) errors.push("最大可承受亏损必须为正数");
                 if (maxLoss > principal) errors.push("最大可承受亏损不能超过总本金");
                 if (isNaN(openPrice) || openPrice <= 0.0001) errors.push("开仓价格必须大于0.0001");
@@ -1006,10 +790,6 @@
                     // 标记错误的输入框
                     if (errors.includes("总本金必须为正数")) principalEl.classList.add('input-error');
                     else principalEl.classList.remove('input-error');
-                    
-                    if (errors.includes("开仓本金必须为正数") || errors.includes("开仓本金不能超过总本金")) 
-                        usedPrincipalEl.classList.add('input-error');
-                    else usedPrincipalEl.classList.remove('input-error');
                     
                     if (errors.includes("最大可承受亏损必须为正数") || errors.includes("最大可承受亏损不能超过总本金")) 
                         maxLossEl.classList.add('input-error');
@@ -1032,19 +812,20 @@
                 }
                 
                 // 清除所有错误样式
-                [principalEl, usedPrincipalEl, maxLossEl, openPriceEl, 
+                [principalEl, maxLossEl, openPriceEl, 
                  stopLossPriceEl, takeProfitPriceEl, leverageEl].forEach(el => {
                     el.classList.remove('input-error');
                 });
+                
+                // 先计算建议开仓本金
+                calculateSuggestedPrincipal();
+                const usedPrincipal = parseFloat(document.getElementById('usedPrincipal').textContent) || 0;
                 
                 // 计算开仓金额（实际开仓本金 × 杠杆倍数）
                 const positionSize = usedPrincipal * leverage;
                 
                 // 计算持仓单位
                 const positionUnits = positionSize / openPrice;
-                
-                // 计算每单位价格波动的影响
-                const priceImpact = positionUnits;
                 
                 // 根据交易方向计算价格差异
                 let stopLossDiff, takeProfitDiff;
@@ -1060,8 +841,8 @@
                 }
                 
                 // 计算亏损和盈利金额
-                const lossAmount = stopLossDiff * priceImpact;
-                const profitAmount = takeProfitDiff * priceImpact;
+                const lossAmount = stopLossDiff * positionUnits;
+                const profitAmount = takeProfitDiff * positionUnits;
                 
                 // 计算盈亏比
                 const riskRewardRatio = stopLossDiff > 0 ? takeProfitDiff / stopLossDiff : 0;
@@ -1090,21 +871,14 @@
                     crossLiquidationPrice = Math.max(0, crossLiquidationPrice);
                 }
                 
-                // 更新结果显示
+                // 更新结果显示（按新顺序）
                 document.getElementById('positionSize').textContent = positionSize.toFixed(2);
-                document.getElementById('priceImpact').textContent = priceImpact.toFixed(6);
-                document.getElementById('lossAmount').textContent = lossAmount.toFixed(2);
-                document.getElementById('profitAmount').textContent = profitAmount.toFixed(2);
                 document.getElementById('riskRewardRatio').textContent = riskRewardRatio.toFixed(2) + ':1';
                 document.getElementById('positionUnits').textContent = positionUnits.toFixed(6);
+                document.getElementById('lossAmount').textContent = lossAmount.toFixed(2);
+                document.getElementById('profitAmount').textContent = profitAmount.toFixed(2);
                 document.getElementById('isolatedLiquidationPrice').textContent = isolatedLiquidationPrice.toFixed(2);
                 document.getElementById('crossLiquidationPrice').textContent = crossLiquidationPrice.toFixed(2);
-                
-                // 更新图表
-                if (priceChart) {
-                    priceChart.data.datasets[0].data = [stopLossPrice, openPrice, takeProfitPrice];
-                    priceChart.update();
-                }
                 
                 // 显示风险提示（基于逐仓爆仓价判断风险）
                 const riskWarning = document.getElementById('riskWarning');
@@ -1150,17 +924,15 @@
                 const tradeDirection = document.getElementById('tradeDirection').value;
                 const directionLabel = tradeDirection === 'long' ? '做多' : '做空';
                 const maxLoss = document.getElementById('maxLoss').value;
-                const maxLossPercent = document.getElementById('maxLossPercent').value;
-                const usedPrincipal = document.getElementById('usedPrincipal').value;
+                const usedPrincipal = document.getElementById('usedPrincipal').textContent;
                 const stopLossPrice = document.getElementById('stopLossPrice').value;
-                const stopLossPercent = document.getElementById('stopLossPercent').value;
+                const stopLossPercent = document.getElementById('stopLossPercent').textContent;
                 const takeProfitPrice = document.getElementById('takeProfitPrice').value;
-                const takeProfitPercent = document.getElementById('takeProfitPercent').value;
+                const takeProfitPercent = document.getElementById('takeProfitPercent').textContent;
                 const leverage = document.getElementById('leverageBasic').value;
                 
                 // 获取计算结果
                 const positionSize = document.getElementById('positionSize').textContent;
-                const priceImpact = document.getElementById('priceImpact').textContent;
                 const lossAmount = document.getElementById('lossAmount').textContent;
                 const profitAmount = document.getElementById('profitAmount').textContent;
                 const riskRewardRatio = document.getElementById('riskRewardRatio').textContent;
@@ -1179,16 +951,14 @@
                     [`交易方向: ${directionLabel}`, "", "", ""],
                     ["", "", "", ""],
                     ["交易参数", "数值", "计算结果", "数值"],
-                    ["总本金", principal, "开仓金额（本金×杠杆）", positionSize],
-                    ["最大可承受亏损", maxLoss, "每单位价格波动影响", priceImpact],
-                    ["最大亏损百分比(%)", maxLossPercent, "止损亏损金额", lossAmount],
-                    ["实际开仓本金", usedPrincipal, "止盈盈利金额", profitAmount],
+                    ["总本金", principal, "建议开仓本金", usedPrincipal],
+                    ["最大可承受亏损", maxLoss, "开仓金额（本金×杠杆）", positionSize],
                     ["开仓价格", openPrice, "盈亏比", riskRewardRatio],
                     ["止损价格", stopLossPrice, "持仓单位", positionUnits],
-                    [`止损幅度(${directionLabel === '做多' ? '低于' : '高于'}开仓价，%)`, stopLossPercent, "逐仓爆仓价（基于开仓本金）", isolatedLiquidationPrice],
-                    ["止盈价格", takeProfitPrice, "全仓爆仓价（基于总本金）", crossLiquidationPrice],
-                    [`止盈幅度(${directionLabel === '做多' ? '高于' : '低于'}开仓价，%)`, takeProfitPercent, "", ""],
-                    ["杠杆倍数", leverage, "", ""]
+                    [`止损幅度(${directionLabel === '做多' ? '低于' : '高于'}开仓价，%)`, stopLossPercent, "止损亏损金额", lossAmount],
+                    ["止盈价格", takeProfitPrice, "止盈盈利金额", profitAmount],
+                    [`止盈幅度(${directionLabel === '做多' ? '高于' : '低于'}开仓价，%)`, takeProfitPercent, "逐仓爆仓价（基于开仓本金）", isolatedLiquidationPrice],
+                    ["杠杆倍数", leverage, "全仓爆仓价（基于总本金）", crossLiquidationPrice]
                 ];
                 
                 // 创建工作表和工作簿
